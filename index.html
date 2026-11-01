@@ -4,39 +4,46 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DBZ + DBS Arena</title>
+    <title>Dragon Ball Z + Super Arena</title>
     <style>
         :root {
-            --bg1: #111827;
-            --bg2: #1f2937;
-            --panel: rgba(17, 24, 39, 0.8);
-            --text: #f3f4f6;
+            --bg1: #090b12;
+            --panel: rgba(9, 11, 18, 0.8);
+            --border: rgba(255, 255, 255, 0.18);
             --gold: #fbbf24;
+            --white: #f8fafc;
+            --cyan: #67e8f9;
+            --pink: #f9a8d4;
+            --purple: #c084fc;
             --red: #ef4444;
-            --blue: #60a5fa;
-            --green: #34d399;
-            --purple: #a78bfa;
+            --green: #4ade80;
         }
 
         * {
             box-sizing: border-box;
         }
 
+        html,
         body {
             margin: 0;
+            width: 100%;
+            height: 100%;
             font-family: Arial, Helvetica, sans-serif;
-            background: radial-gradient(circle at top, #2d3748, #111827 60%);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            color: var(--white);
+            background:
+                radial-gradient(circle at top, rgba(125, 211, 252, 0.22), transparent 28%),
+                linear-gradient(180deg, #0b1021, #050a13 40%, #0c1323 100%);
             overflow: hidden;
         }
 
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         .game-shell {
-            width: 980px;
-            max-width: calc(100vw - 20px);
+            width: min(1100px, calc(100vw - 22px));
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -46,121 +53,135 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            padding: 8px 14px;
-            background: var(--panel);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+            padding: 10px 16px;
+            background: rgba(12, 19, 35, 0.85);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
         }
 
-        .title {
-            font-weight: bold;
-            letter-spacing: 0.08em;
+        .brand {
+            letter-spacing: 0.17em;
             text-transform: uppercase;
+            font-weight: 800;
             color: var(--gold);
+            white-space: nowrap;
         }
 
-        .controls {
+        .round-marker {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #dbeafe;
+        }
+
+        .fighter-select {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
             justify-content: center;
-            padding: 8px 12px;
-            background: rgba(17, 24, 39, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(12, 19, 35, 0.85);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
         }
 
-        button {
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(180deg, #374151, #1f2937);
+        .fighter-btn {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(180deg, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
             color: white;
-            padding: 10px 14px;
-            font-weight: bold;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.12s ease, filter 0.12s ease;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+            min-width: 110px;
         }
 
-        button:hover {
+        .fighter-btn:hover {
             transform: translateY(-1px);
-            filter: brightness(1.08);
+            border-color: rgba(251, 191, 36, 0.75);
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.22);
         }
 
-        button.active {
-            background: linear-gradient(180deg, var(--gold), #d97706);
+        .fighter-btn.active {
+            background: linear-gradient(180deg, #fbbf24, #f59e0b);
             color: #111827;
+            border-color: rgba(251, 191, 36, 1);
+            box-shadow: 0 0 18px rgba(251, 191, 36, 0.5);
         }
 
-        .arena-wrap {
+        .arena-box {
             position: relative;
-            border-radius: 18px;
+            border-radius: 20px;
             overflow: hidden;
-            border: 3px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
-            background: linear-gradient(#1e293b, #0f172a);
+            border: 3px solid var(--border);
+            background: #09111d;
+            box-shadow: 0 18px 46px rgba(0, 0, 0, 0.42);
         }
 
         canvas {
             display: block;
             width: 100%;
             height: auto;
-            background:
-                radial-gradient(circle at center, rgba(96, 165, 250, 0.12), transparent 38%),
-                linear-gradient(180deg, #0f172a, #111827 40%, #1f2937 100%);
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(180deg, #0f172a, #111827 45%, #101827 100%);
         }
 
-        .message {
+        .battle-message {
             position: absolute;
+            top: 16px;
             left: 50%;
-            top: 18px;
             transform: translateX(-50%);
-            min-width: 240px;
+            min-width: 260px;
+            max-width: 80%;
             text-align: center;
-            background: rgba(15, 23, 42, 0.72);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 9px 16px;
+            background: rgba(8, 11, 20, 0.68);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             border-radius: 999px;
-            padding: 8px 16px;
-            font-weight: bold;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
             color: var(--gold);
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             pointer-events: none;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
 
-        .info {
+        .info-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            background: rgba(17, 24, 39, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
             padding: 10px 12px;
+            background: rgba(12, 19, 35, 0.85);
+            border: 2px solid var(--border);
+            border-radius: 12px;
             font-size: 14px;
             color: #dbeafe;
         }
 
-        .keylist {
+        .keys {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .key {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 26px;
-            height: 26px;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            font-weight: bold;
-            color: var(--text);
+            min-width: 24px;
+            height: 24px;
             padding: 0 8px;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-weight: 800;
+            color: white;
         }
     </style>
 </head>
@@ -168,257 +189,485 @@
 <body>
     <div class="game-shell">
         <div class="hud">
-            <div class="title">DBZ + DBS Arena</div>
-            <div id="scoreboard">Round 1</div>
+            <div class="brand">DBZ + DBS Arena</div>
+            <div class="round-marker" id="roundText">Round 1</div>
         </div>
 
-        <div class="controls" id="charSelect"></div>
+        <div class="fighter-select" id="fighterSelect"></div>
 
-        <div class="arena-wrap">
-            <div class="message" id="message">Choose your fighter</div>
-            <canvas id="game" width="980" height="540"></canvas>
+        <div class="arena-box">
+            <div class="battle-message" id="battleMessage">Choose your fighter</div>
+            <canvas id="gameCanvas" width="1100" height="620"></canvas>
         </div>
 
-        <div class="info">
-            <div>Controls</div>
-            <div class="keylist">
-                <span class="key">A/D</span> Move
-                <span class="key">W</span> Jump
-                <span class="key">J</span> Punch
-                <span class="key">K</span> Ki Blast
-                <span class="key">L</span> Special
+        <div class="info-bar">
+            <div>Move: A / D | Jump: W | Punch: J | Ki Blast: K | Special: L</div>
+            <div class="keys">
+                <span class="key">A</span>
+                <span class="key">D</span>
+                <span class="key">W</span>
+                <span class="key">J</span>
+                <span class="key">K</span>
+                <span class="key">L</span>
             </div>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById("game");
+        const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const charSelect = document.getElementById("charSelect");
-        const messageEl = document.getElementById("message");
-        const scoreboardEl = document.getElementById("scoreboard");
+        const fighterSelect = document.getElementById("fighterSelect");
+        const battleMessage = document.getElementById("battleMessage");
+        const roundText = document.getElementById("roundText");
 
-        const keys = {};
+        const groundY = 470;
+        const animationState = { lastTs: 0, activeKeys: {}, selected: null };
+
         const projectiles = [];
+        const particles = [];
         const effects = [];
-        let selectedChar = null;
-        let player = null;
-        let enemy = null;
-        let aiTimer = 0;
-        let lastTimestamp = 0;
-        let roundNumber = 1;
-        let gameActive = false;
 
         const fighterCatalog = [
             {
                 name: "Goku",
-                palette: ["#fca5a5", "#fbbf24", "#60a5fa"],
-                boost: { speed: 280, jump: 520, power: 22, ki: 16, hp: 170, special: "Kamehameha" },
-                voice: "Saiyan spirit"
+                primary: "#f59e0b",
+                secondary: "#60a5fa",
+                hair: "#facc15",
+                gi: "#2563eb",
+                aura: "#7dd3fc",
+                specialName: "Kamehameha",
+                speed: 260,
+                jumpForce: 620,
+                power: 24,
+                maxHp: 170,
+                energyRate: 6.5
             },
             {
                 name: "Vegeta",
-                palette: ["#c4b5fd", "#fbbf24", "#f87171"],
-                boost: { speed: 260, jump: 500, power: 25, ki: 18, hp: 175, special: "Final Flash" },
-                voice: "Prince of all Saiyans"
+                primary: "#c084fc",
+                secondary: "#ef4444",
+                hair: "#f8fafc",
+                gi: "#7c3aed",
+                aura: "#fca5a5",
+                specialName: "Final Flash",
+                speed: 250,
+                jumpForce: 610,
+                power: 26,
+                maxHp: 176,
+                energyRate: 7
             },
             {
                 name: "Gohan",
-                palette: ["#a7f3d0", "#fbbf24", "#93c5fd"],
-                boost: { speed: 290, jump: 540, power: 20, ki: 18, hp: 165, special: "Masenko" },
-                voice: "Super Saiyan Beast"
+                primary: "#34d399",
+                secondary: "#93c5fd",
+                hair: "#fbbf24",
+                gi: "#16a34a",
+                aura: "#bfdbfe",
+                specialName: "Masenko",
+                speed: 270,
+                jumpForce: 640,
+                power: 23,
+                maxHp: 168,
+                energyRate: 7
             },
             {
                 name: "Trunks",
-                palette: ["#bfdbfe", "#22d3ee", "#fca5a5"],
-                boost: { speed: 300, jump: 530, power: 21, ki: 17, hp: 168, special: "Burning Attack" },
-                voice: "Future warrior"
+                primary: "#bfdbfe",
+                secondary: "#22d3ee",
+                hair: "#f8fafc",
+                gi: "#0ea5e9",
+                aura: "#a5f3fc",
+                specialName: "Burning Attack",
+                speed: 280,
+                jumpForce: 630,
+                power: 24,
+                maxHp: 168,
+                energyRate: 7
             },
             {
                 name: "Beerus",
-                palette: ["#d8b4fe", "#fca5a5", "#fbbf24"],
-                boost: { speed: 275, jump: 510, power: 24, ki: 20, hp: 185, special: "Hakai" },
-                voice: "God of destruction"
+                primary: "#d8b4fe",
+                secondary: "#fca5a5",
+                hair: "#f8fafc",
+                gi: "#a855f7",
+                aura: "#f472b6",
+                specialName: "Hakai",
+                speed: 250,
+                jumpForce: 620,
+                power: 28,
+                maxHp: 188,
+                energyRate: 7.5
             },
             {
                 name: "Hit",
-                palette: ["#cbd5e1", "#fca5a5", "#7dd3fc"],
-                boost: { speed: 310, jump: 515, power: 23, ki: 17, hp: 172, special: "Time Skip" },
-                voice: "Universe assassin"
+                primary: "#e2e8f0",
+                secondary: "#7dd3fc",
+                hair: "#cbd5e1",
+                gi: "#475569",
+                aura: "#93c5fd",
+                specialName: "Time Skip",
+                speed: 290,
+                jumpForce: 630,
+                power: 25,
+                maxHp: 174,
+                energyRate: 7.2
             }
         ];
 
-        function buildSelector() {
-            fighterCatalog.forEach((fighter, idx) => {
-                const btn = document.createElement("button");
-                btn.textContent = fighter.name;
-                btn.addEventListener("click", () => {
-                    if (selectedChar && selectedChar.name === fighter.name) return;
-                    selectedChar = fighter;
-                    document.querySelectorAll("#charSelect button").forEach(b => b.classList.remove("active"));
-                    btn.classList.add("active");
-                    startMatch();
-                });
-                charSelect.appendChild(btn);
-            });
-        }
+        let player = null;
+        let enemy = null;
+        let round = 1;
+        let gameActive = false;
+        let menuOpen = true;
 
         function randomEnemyName(exclude) {
             const pool = fighterCatalog.filter(f => f.name !== exclude);
             return pool[Math.floor(Math.random() * pool.length)];
         }
 
-        function spawnFighter(config, isPlayer) {
+        function clamp(v, min, max) {
+            return Math.min(Math.max(v, min), max);
+        }
+
+        function makeFighter(config, isPlayer) {
             const f = {
-                name: config.name,
-                color: config.palette[0],
-                accent: config.palette[1],
-                aura: config.palette[2],
-                speed: config.boost.speed,
-                jumpSpeed: config.boost.jump,
-                power: config.boost.power,
-                ki: config.boost.ki,
-                maxHp: config.boost.hp,
-                hp: config.boost.hp,
-                maxEnergy: 100,
-                energy: 40,
-                attackCooldown: 0,
-                hitFlash: 0,
-                facing: isPlayer ? 1 : -1,
-                x: isPlayer ? 220 : 760,
-                y: 360,
-                vy: 0,
-                width: 52,
-                height: 104,
-                onGround: true,
+                ...config,
+                width: 70,
+                height: 128,
+                x: isPlayer ? 200 : 900,
+                y: groundY - 128,
                 vx: 0,
-                ai: !isPlayer,
-                combo: 0,
-                voice: config.voice,
+                vy: 0,
+                facing: isPlayer ? 1 : -1,
+                hp: config.maxHp,
+                maxHp: config.maxHp,
+                energy: 36,
+                maxEnergy: 100,
+                state: "idle",
+                attackCooldown: 0,
+                flashTimer: 0,
+                hitPause: 0,
+                onGround: true,
+                isPlayer,
+                specialCooldown: 0,
+                voice: config.name,
+                auraPulse: 0
             };
             return f;
         }
 
-        function resetBattleState() {
+        function buildFighterButtons() {
+            fighterCatalog.forEach((fighter, idx) => {
+                const btn = document.createElement("button");
+                btn.className = "fighter-btn";
+                btn.textContent = fighter.name;
+                btn.addEventListener("click", () => {
+                    animationState.selected = fighter;
+                    document.querySelectorAll(".fighter-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    startBattle(fighter);
+                });
+                fighterSelect.appendChild(btn);
+            });
+
+            if (fighterCatalog[0]) {
+                animationState.selected = fighterCatalog[0];
+                const firstBtn = fighterSelect.children[0];
+                if (firstBtn) firstBtn.classList.add("active");
+                startBattle(fighterCatalog[0]);
+            }
+        }
+
+        function setMessage(text) {
+            battleMessage.textContent = text;
+        }
+
+        function refreshRound() {
+            roundText.textContent = `Round ${round}`;
+        }
+
+        function startBattle(fighter) {
+            const enemyConfig = randomEnemyName(fighter.name);
+            player = makeFighter(fighter, true);
+            enemy = makeFighter(enemyConfig, false);
+
+            player.x = 180;
+            enemy.x = canvas.width - 180;
+
+            player.y = groundY - player.height;
+            enemy.y = groundY - enemy.height;
+
             projectiles.length = 0;
+            particles.length = 0;
             effects.length = 0;
-            aiTimer = 0;
-            messageEl.textContent = "Fight!";
-            scoreboardEl.textContent = `Round ${roundNumber}`;
-        }
 
-        function startMatch() {
-            if (!selectedChar) return;
-            const enemyChar = randomEnemyName(selectedChar.name);
-            player = spawnFighter(selectedChar, true);
-            enemy = spawnFighter(enemyChar, false);
-            enemy.x = canvas.width - 220;
-            resetBattleState();
+            setMessage("Fight!");
             gameActive = true;
+            menuOpen = false;
+            refreshRound();
         }
 
-        function isOverlapping(a, b) {
-            const dx = Math.abs(a.x - b.x);
-            const dy = Math.abs(a.y - b.y);
-            return dx < (a.width + b.width) * 0.6 && dy < (a.height + b.height) * 0.6;
+        function triggerPunch(actor) {
+            if (!actor || actor.attackCooldown > 0 || !gameActive) return;
+            actor.attackCooldown = 0.38;
+            actor.state = "punch";
+            actor.energy = Math.min(100, actor.energy + 8);
+
+            const target = actor.isPlayer ? enemy : player;
+            if (!target) return;
+
+            const dx = Math.abs(actor.x - target.x);
+            const dy = Math.abs(actor.y - target.y);
+
+            if (dx < 100 && dy < 90) {
+                const dmg = actor.power + 6;
+                applyDamage(target, dmg, actor);
+            } else {
+                burst(actor.x + actor.facing * 32, actor.y + 34, actor.primary, 10, 0.2, 18, 0);
+            }
         }
 
-        function addEffect(x, y, color, radius, life, style = "burst") {
-            effects.push({ x, y, color, radius, life, maxLife: life, style });
+        function triggerKiBlast(actor) {
+            if (!actor || actor.attackCooldown > 0 || actor.energy < 18 || !gameActive) return;
+            actor.attackCooldown = 0.42;
+            actor.state = "ki";
+            actor.energy -= 18;
+
+            const blast = {
+                x: actor.x + actor.facing * 32,
+                y: actor.y + 42,
+                radius: 11,
+                vx: actor.facing * 500,
+                color: actor.aura,
+                source: actor,
+                life: 1.8
+            };
+
+            projectiles.push(blast);
+            burst(blast.x, blast.y, actor.aura, 12, 0.24, 16, 0);
         }
 
-        function damageTarget(target, amount, source) {
+        function triggerSpecial(actor) {
+            if (!actor || actor.attackCooldown > 0 || actor.energy < 45 || !gameActive) return;
+            actor.attackCooldown = 0.85;
+            actor.state = "special";
+            actor.energy -= 45;
+
+            const target = actor.isPlayer ? enemy : player;
+            if (!target) return;
+
+            const dx = Math.abs(actor.x - target.x);
+            if (dx < 260) {
+                applyDamage(target, actor.power + 28, actor);
+            }
+
+            const beam = {
+                x: actor.x + actor.facing * 26,
+                y: actor.y + 25,
+                width: 400,
+                height: 18,
+                life: 0.5,
+                source: actor,
+                color: actor.aura
+            };
+            effects.push(beam);
+
+            burst(actor.x + actor.facing * 60, actor.y + 22, actor.primary, 30, 0.6, 26, 0);
+            burst(actor.x + actor.facing * 80, actor.y + 22, actor.aura, 24, 0.7, 32, 0);
+
+            if (actor.isPlayer) {
+                setMessage(`${actor.name} uses ${actor.specialName}!`);
+            }
+        }
+
+        function applyDamage(target, amount, source) {
             if (!target || !gameActive) return;
+
             target.hp = Math.max(0, target.hp - amount);
-            target.hitFlash = 0.12;
-            addEffect(target.x, target.y - 35, source.color, 18, 0.38, "hit");
+            target.flashTimer = 0.18;
+            target.state = "hit";
+            target.vx += (source.isPlayer ? 1 : -1) * 40;
+
+            burst(target.x, target.y + 20, "#fef2f2", 16, 0.33, 26, 0);
+            burst(target.x, target.y + 26, source.aura, 18, 0.32, 22, 0);
 
             if (target.hp <= 0) {
-                const winner = source === player ? player : enemy;
-                const loser = source === player ? enemy : player;
-                messageEl.textContent = `${winner.name} wins!`;
+                const winner = source.isPlayer ? player : enemy;
                 gameActive = false;
+                setMessage(`${winner.name} wins!`);
                 setTimeout(() => {
-                    if (selectedChar) {
-                        roundNumber++;
-                        startMatch();
-                    }
+                    round += 1;
+                    refreshRound();
+                    if (animationState.selected) startBattle(animationState.selected);
                 }, 1200);
             }
         }
 
-        function handleInput(dt) {
+        function burst(x, y, color, amount, life, radiusRange, speed = 1) {
+            for (let i = 0; i < amount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = (Math.random() * 140 + 50) * speed;
+                particles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity - 30,
+                    radius: Math.random() * radiusRange + 3,
+                    color,
+                    life,
+                    maxLife: life
+                });
+            }
+        }
+
+        function handlePlayerInput(dt) {
             if (!player || !gameActive) return;
-            const move = (keys["a"] ? -1 : 0) + (keys["d"] ? 1 : 0);
+
+            const left = animationState.activeKeys["a"];
+            const right = animationState.activeKeys["d"];
+            const move = (right ? 1 : 0) - (left ? 1 : 0);
 
             if (move !== 0) {
                 player.x += move * player.speed * dt;
                 player.facing = move > 0 ? 1 : -1;
+                player.state = "run";
+            } else if (player.onGround) {
+                player.state = "idle";
             }
 
-            if (keys["w"] && player.onGround) {
-                player.vy = -player.jumpSpeed;
+            if (animationState.activeKeys["w"] && player.onGround && !player.jumpLatch) {
+                player.vy = -player.jumpForce;
                 player.onGround = false;
+                player.jumpLatch = true;
+                player.state = "jump";
             }
 
-            if (keys["j"]) punch(player);
-            if (keys["k"]) kiBlast(player);
-            if (keys["l"]) special(player);
+            if (!animationState.activeKeys["w"]) {
+                player.jumpLatch = false;
+            }
 
-            player.x = clamp(player.x, 50, canvas.width - 50);
+            player.x = clamp(player.x, 70, canvas.width - 70);
         }
 
-        function punch(attacker) {
-            if (attacker.attackCooldown > 0) return;
-            attacker.attackCooldown = 0.42;
-            const target = attacker === player ? enemy : player;
-            const distance = Math.abs(attacker.x - target.x);
-            if (distance < 90) {
-                const dmg = attacker.power + 6;
-                damageTarget(target, dmg, attacker);
+        function updateEnemyAI(dt) {
+            if (!enemy || !gameActive || !player) return;
+
+            const dx = player.x - enemy.x;
+            const dist = Math.abs(dx);
+
+            if (dist > 90) {
+                const dir = dx > 0 ? 1 : -1;
+                enemy.facing = dir;
+                enemy.x += dir * enemy.speed * 0.82 * dt;
+                enemy.state = enemy.onGround ? "run" : "jump";
+            } else if (enemy.onGround) {
+                enemy.state = "idle";
+            }
+
+            if (Math.random() < 0.016 && enemy.onGround) {
+                enemy.vy = -enemy.jumpForce * 0.92;
+                enemy.onGround = false;
+                enemy.state = "jump";
+            }
+
+            if (dist < 110 && Math.random() < 0.035) {
+                triggerPunch(enemy);
+            } else if (dist < 260 && enemy.energy >= 18 && Math.random() < 0.018) {
+                triggerKiBlast(enemy);
+            } else if (dist < 240 && enemy.energy >= 45 && Math.random() < 0.011) {
+                triggerSpecial(enemy);
+            }
+
+            enemy.x = clamp(enemy.x, 70, canvas.width - 70);
+        }
+
+        function updateFighter(fighter, dt) {
+            if (!fighter) return;
+
+            fighter.attackCooldown = Math.max(0, fighter.attackCooldown - dt);
+            fighter.flashTimer = Math.max(0, fighter.flashTimer - dt);
+            fighter.specialCooldown = Math.max(0, fighter.specialCooldown - dt);
+
+            fighter.energy = Math.min(100, fighter.energy + fighter.energyRate * dt);
+
+            fighter.vy += 1200 * dt;
+            fighter.y += fighter.vy * dt;
+
+            const floor = groundY - fighter.height;
+            if (fighter.y >= floor) {
+                fighter.y = floor;
+                fighter.vy = 0;
+                fighter.onGround = true;
             } else {
-                addEffect(attacker.x + attacker.facing * 27, attacker.y - 30, attacker.accent, 10, 0.22, "spark");
-            }
-            attacker.energy = Math.min(100, attacker.energy + 10);
-        }
-
-        function kiBlast(attacker) {
-            if (attacker.attackCooldown > 0 || attacker.energy < 16) return;
-            attacker.attackCooldown = 0.38;
-            attacker.energy -= 16;
-
-            const projectile = {
-                x: attacker.x + attacker.facing * 28,
-                y: attacker.y - 42,
-                radius: 8,
-                vx: attacker.facing * 420,
-                color: attacker.aura,
-                source: attacker,
-                life: 1.8
-            };
-            projectiles.push(projectile);
-        }
-
-        function special(attacker) {
-            if (attacker.attackCooldown > 0 || attacker.energy < 45) return;
-            attacker.attackCooldown = 0.75;
-            attacker.energy -= 45;
-
-            const target = attacker === player ? enemy : player;
-            const distance = Math.abs(attacker.x - target.x);
-
-            if (distance < 220) {
-                damageTarget(target, attacker.power + 25, attacker);
+                fighter.onGround = false;
             }
 
-            addEffect(attacker.x + attacker.facing * 45, attacker.y - 48, attacker.color, 28, 0.7, "beam");
-            if (attacker === player) {
-                messageEl.textContent = `${attacker.name} uses ${attacker.special || "Special Move"}!`;
+            if (fighter.onGround && fighter.state === "jump") {
+                fighter.state = "idle";
+            }
+
+            if (fighter.state === "hit" && fighter.onGround) {
+                fighter.state = "idle";
+            }
+
+            if (fighter.state === "punch" && fighter.attackCooldown <= 0.05) {
+                fighter.state = "idle";
+            }
+
+            if (fighter.state === "ki" && fighter.attackCooldown <= 0.05) {
+                fighter.state = "idle";
+            }
+
+            if (fighter.state === "special" && fighter.attackCooldown <= 0.15) {
+                fighter.state = "idle";
+            }
+
+            fighter.auraPulse += dt * 4.5;
+        }
+
+        function updateProjectiles(dt) {
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.x += p.vx * dt;
+                p.life -= dt;
+
+                const target = p.source.isPlayer ? enemy : player;
+                if (target) {
+                    const hitBox = {
+                        x: target.x,
+                        y: target.y + 20,
+                        w: target.width,
+                        h: target.height - 20
+                    };
+
+                    const dx = Math.abs(p.x - (hitBox.x + hitBox.w / 2));
+                    const dy = Math.abs(p.y - (hitBox.y + hitBox.h / 2));
+
+                    if (dx < hitBox.w * 0.55 && dy < hitBox.h * 0.6) {
+                        applyDamage(target, p.source.power + 10, p.source);
+                        projectiles.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                if (p.x < -40 || p.x > canvas.width + 40 || p.life <= 0) {
+                    projectiles.splice(i, 1);
+                }
             }
         }
 
-        function clamp(v, min, max) {
-            return Math.min(Math.max(v, min), max);
+        function updateParticles(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.vy += 220 * dt;
+                p.life -= dt;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
         }
 
         function updateEffects(dt) {
@@ -429,307 +678,331 @@
             }
         }
 
-        function updateProjectiles(dt) {
-            for (let i = projectiles.length - 1; i >= 0; i--) {
-                const p = projectiles[i];
-                p.x += p.vx * dt;
-                p.life -= dt;
-
-                const target = p.source === player ? enemy : player;
-                if (target) {
-                    const dx = p.x - target.x;
-                    const dy = p.y - (target.y - 32);
-                    if (Math.abs(dx) < (p.radius + target.width * 0.5) && Math.abs(dy) < (p.radius + target.height * 0.5)) {
-                        damageTarget(target, p.source.power + 14, p.source);
-                        projectiles.splice(i, 1);
-                        continue;
-                    }
-                }
-
-                if (p.x < -20 || p.x > canvas.width + 20 || p.life <= 0) {
-                    projectiles.splice(i, 1);
-                }
-            }
-        }
-
-        function updateAI(dt) {
-            if (!enemy || !gameActive || !player) return;
-            aiTimer -= dt;
-            if (aiTimer <= 0) {
-                const dist = Math.abs(enemy.x - player.x);
-                const shouldMove = dist > 90;
-                if (dist > 0) {
-                    const direction = player.x > enemy.x ? 1 : -1;
-                    enemy.facing = direction;
-                    if (shouldMove) {
-                        enemy.x += direction * enemy.speed * 0.8 * dt;
-                    }
-                }
-
-                if (dist < 100 && Math.random() < 0.68) {
-                    punch(enemy);
-                } else if (enemy.energy >= 22 && dist < 230 && Math.random() < 0.3) {
-                    kiBlast(enemy);
-                } else if (enemy.energy >= 45 && dist < 210 && Math.random() < 0.18) {
-                    special(enemy);
-                }
-
-                if (Math.random() < 0.24 && enemy.onGround) {
-                    enemy.vy = -enemy.jumpSpeed * 0.9;
-                    enemy.onGround = false;
-                }
-
-                aiTimer = 0.25 + Math.random() * 0.3;
-            }
-        }
-
-        function updateFighter(fighter, dt) {
-            if (!fighter) return;
-            fighter.attackCooldown = Math.max(0, fighter.attackCooldown - dt);
-            fighter.hitFlash = Math.max(0, fighter.hitFlash - dt);
-
-            fighter.vy += 1000 * dt;
-            fighter.y += fighter.vy * dt;
-
-            if (fighter.y >= 360) {
-                fighter.y = 360;
-                fighter.vy = 0;
-                fighter.onGround = true;
-            }
-
-            fighter.x = clamp(fighter.x, 60, canvas.width - 60);
-
-            fighter.energy = Math.min(100, fighter.energy + dt * 7.5);
-        }
-
-        function update(dt) {
-            if (!selectedChar) {
+        function updateWorld(dt) {
+            if (!player || !enemy || !gameActive) {
+                updateParticles(dt);
+                updateEffects(dt);
                 return;
             }
 
-            if (player && enemy && gameActive) {
-                handleInput(dt);
-                updateAI(dt);
-                updateFighter(player, dt);
-                updateFighter(enemy, dt);
-                updateProjectiles(dt);
-                updateEffects(dt);
+            handlePlayerInput(dt);
+            updateEnemyAI(dt);
 
-                if (player && enemy && isOverlapping(player, enemy)) {
-                    player.x += player.facing * 12;
-                    enemy.x -= enemy.facing * 12;
-                }
-            } else {
-                updateEffects(dt);
+            updateFighter(player, dt);
+            updateFighter(enemy, dt);
+
+            updateProjectiles(dt);
+            updateParticles(dt);
+            updateEffects(dt);
+
+            if (Math.abs(player.x - enemy.x) < 70) {
+                player.x += player.facing * 14 * dt;
+                enemy.x -= enemy.facing * 14 * dt;
             }
         }
 
         function drawBackground() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            sky.addColorStop(0, "#0f172a");
-            sky.addColorStop(0.5, "#1e293b");
-            sky.addColorStop(1, "#111827");
+            sky.addColorStop(0, "#0b1221");
+            sky.addColorStop(0.42, "#11213d");
+            sky.addColorStop(1, "#090e18");
             ctx.fillStyle = sky;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            for (let i = 0; i < 9; i++) {
-                const x = (i * 140) + (performance.now() * 0.02) % 140;
-                ctx.fillStyle = "rgba(255,255,255,0.06)";
-                ctx.fillRect(x, 160 + (i % 3) * 24, 70, 2);
+            // sun glow
+            const sunX = canvas.width * 0.72;
+            const sunY = 120;
+            const g = ctx.createRadialGradient(sunX, sunY, 20, sunX, sunY, 150);
+            g.addColorStop(0, "rgba(253,224,71,0.95)");
+            g.addColorStop(0.2, "rgba(251,191,36,0.6)");
+            g.addColorStop(0.7, "rgba(251,191,36,0.15)");
+            g.addColorStop(1, "rgba(251,191,36,0)");
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // clouds
+            const t = performance.now() * 0.01;
+            for (let i = 0; i < 7; i++) {
+                const x = ((i * 180) + (t * (20 + i))) % (canvas.width + 200) - 100;
+                const y = 80 + (i % 3) * 24;
+                ctx.fillStyle = "rgba(255,255,255,0.05)";
+                ctx.beginPath();
+                ctx.arc(x, y, 22, 0, Math.PI * 2);
+                ctx.arc(x + 18, y - 10, 18, 0, Math.PI * 2);
+                ctx.arc(x + 36, y, 20, 0, Math.PI * 2);
+                ctx.fill();
             }
 
-            ctx.fillStyle = "rgba(30,41,59,0.7)";
-            ctx.fillRect(0, 420, canvas.width, 120);
-
-            ctx.fillStyle = "rgba(56,189,248,0.12)";
-            for (let i = 0; i < canvas.width; i += 28) {
-                ctx.fillRect(i, 420, 16, 10 + ((i / 28) % 4) * 6);
+            // parallax mountains
+            for (let i = 0; i < 4; i++) {
+                const offset = i * 90;
+                ctx.beginPath();
+                ctx.moveTo(-20 + offset, 420);
+                ctx.lineTo(120 + offset, 260);
+                ctx.lineTo(260 + offset, 420);
+                ctx.closePath();
+                ctx.fillStyle = i % 2 === 0 ? "rgba(17,24,39,0.8)" : "rgba(30,41,59,0.9)";
+                ctx.fill();
             }
 
             // ground
-            ctx.fillStyle = "#1f2937";
-            ctx.fillRect(0, 430, canvas.width, 110);
+            ctx.fillStyle = "#111827";
+            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
 
-            // aura glow
-            for (let i = 0; i < 3; i++) {
-                const alpha = 0.07 + i * 0.03;
-                ctx.fillStyle = `rgba(96,165,250,${alpha})`;
-                ctx.fillRect(0, 420 + i * 16, canvas.width, 18);
+            // stadium floor detail
+            for (let i = 0; i < canvas.width; i += 28) {
+                ctx.fillStyle = i % 2 === 0 ? "rgba(96,165,250,0.06)" : "rgba(255,255,255,0.02)";
+                ctx.fillRect(i, groundY, 16, 18 + ((i / 28) % 4) * 6);
             }
+
+            // glow band
+            ctx.fillStyle = "rgba(125,211,252,0.08)";
+            ctx.fillRect(0, groundY - 8, canvas.width, 8);
         }
 
         function drawBar(x, y, w, h, value, max, color) {
-            ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
+            ctx.fillStyle = "rgba(13, 18, 29, 0.75)";
             ctx.fillRect(x, y, w, h);
+
+            const fill = clamp(value / max, 0, 1);
             ctx.fillStyle = color;
-            ctx.fillRect(x, y, w * (value / max), h);
-            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.fillRect(x, y, w * fill, h);
+
+            ctx.strokeStyle = "rgba(255,255,255,0.35)";
             ctx.strokeRect(x, y, w, h);
         }
 
-        function drawFighter(fighter, isPlayer) {
-            if (!fighter) return;
-
-            const x = fighter.x;
-            const y = fighter.y;
-            const bodyColor = fighter.hitFlash > 0 ? "#fef2f2" : fighter.color;
-            const auraColor = fighter.aura;
-
-            // aura
-            ctx.beginPath();
-            ctx.fillStyle = `rgba(96, 165, 250, ${0.18 + fighter.energy / 350})`;
-            ctx.arc(x + 10, y - 28, 52 + fighter.energy * 0.3, 0, Math.PI * 2);
-            ctx.fill();
-
-            // shadow
-            ctx.fillStyle = "rgba(0,0,0,0.25)";
-            ctx.beginPath();
-            ctx.ellipse(x, 425, 32, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // body
-            ctx.save();
-            ctx.translate(x, y);
-
-            ctx.scale(fighter.facing, 1);
-
-            // legs
-            ctx.fillStyle = "#111827";
-            ctx.fillRect(-12, 44, 10, 38);
-            ctx.fillRect(6, 44, 10, 38);
-
-            // torso
-            ctx.fillStyle = bodyColor;
-            ctx.fillRect(-18, -8, 36, 52);
-
-            // head
-            ctx.fillStyle = "#f1c27d";
-            ctx.beginPath();
-            ctx.arc(0, -34, 18, 0, Math.PI * 2);
-            ctx.fill();
-
-            // hair
-            ctx.fillStyle = "#fbbf24";
-            ctx.beginPath();
-            ctx.moveTo(-16, -38);
-            ctx.lineTo(16, -38);
-            ctx.lineTo(20, -22);
-            ctx.lineTo(-20, -22);
-            ctx.closePath();
-            ctx.fill();
-
-            // eyes
-            ctx.fillStyle = "#111827";
-            ctx.fillRect(-8, -38, 5, 4);
-            ctx.fillRect(3, -38, 5, 4);
-
-            // arms
-            ctx.fillStyle = bodyColor;
-            ctx.fillRect(-30, -4, 12, 34);
-            ctx.fillRect(18, -4, 12, 34);
-
-            // aura ring
-            ctx.strokeStyle = auraColor;
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(0, 10, 32, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.restore();
-
-            // health bar
-            const barX = isPlayer ? 66 : canvas.width - 266;
-            const barY = 28;
-            const totalW = 180;
-            drawBar(barX, barY, totalW, 16, fighter.hp, fighter.maxHp, "#ef4444");
-
-            // energy bar
-            drawBar(barX, barY + 22, totalW, 10, fighter.energy, 100, "#60a5fa");
+        function drawNameplate(fighter, x, y, isPlayer) {
+            ctx.fillStyle = "rgba(15, 23, 42, 0.7)";
+            ctx.fillRect(x, y, 160, 28);
 
             ctx.fillStyle = "#f8fafc";
-            ctx.font = "bold 13px Arial";
-            ctx.fillText(fighter.name, barX, barY - 8);
+            ctx.font = "bold 15px Arial";
+            ctx.fillText(fighter.name, x + 10, y + 18);
 
-            // player label
             if (isPlayer) {
-                ctx.fillStyle = "#fde68a";
-                ctx.fillText("YOU", barX, barY + 48);
+                ctx.fillStyle = "#fbbf24";
+                ctx.fillText("YOU", x + 118, y + 18);
             } else {
                 ctx.fillStyle = "#fca5a5";
-                ctx.fillText("CPU", barX + 132, barY + 48);
+                ctx.fillText("CPU", x + 118, y + 18);
             }
         }
 
         function drawProjectiles() {
-            for (const p of projectiles) {
+            projectiles.forEach(p => {
                 ctx.beginPath();
                 ctx.fillStyle = p.color;
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(255,255,255,0.55)";
+                ctx.strokeStyle = "rgba(255,255,255,0.7)";
                 ctx.lineWidth = 2;
+                ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius + 5, 0, Math.PI * 2);
                 ctx.stroke();
-            }
+            });
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                const alpha = clamp(p.life / p.maxLife, 0, 1);
+                ctx.beginPath();
+                ctx.fillStyle = p.color.replace(")", `, ${alpha})`).replace("rgb", "rgba");
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
         }
 
         function drawEffects() {
-            for (const e of effects) {
-                const alpha = e.life / e.maxLife;
-                ctx.beginPath();
-                ctx.fillStyle = e.color.replace(")", `, ${alpha})`).replace("rgb", "rgba");
-                if (e.style === "beam") {
-                    ctx.fillRect(e.x - 18, e.y - 50, 36, 90);
-                } else {
-                    ctx.arc(e.x, e.y, e.radius * (1 + (1 - alpha) * 2), 0, Math.PI * 2);
-                    ctx.fill();
+            effects.forEach(e => {
+                if (e.width) {
+                    const alpha = clamp(e.life / 0.5, 0, 1);
+                    ctx.fillStyle = e.color.replace(")", `, ${alpha})`).replace("rgb", "rgba");
+                    ctx.fillRect(e.x, e.y, e.width, e.height);
+                    return;
                 }
+            });
+        }
+
+        function drawFighter(fighter, isPlayer) {
+            if (!fighter) return;
+
+            const cx = fighter.x;
+            const cy = fighter.y + fighter.height / 2;
+            const bodyColor = fighter.flashTimer > 0 ? "#fdf2f8" : fighter.primary;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // aura
+            const auraR = 44 + Math.sin(fighter.auraPulse) * 4 + fighter.energy * 0.12;
+            const aura = ctx.createRadialGradient(0, 20, 10, 0, 20, auraR);
+            aura.addColorStop(0, "rgba(255,255,255,0.7)");
+            aura.addColorStop(0.15, fighter.aura.replace(")", ", 0.8)").replace("rgb", "rgba"));
+            aura.addColorStop(0.6, fighter.aura.replace(")", ", 0.26)").replace("rgb", "rgba"));
+            aura.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = aura;
+            ctx.beginPath();
+            ctx.arc(0, 0, auraR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // shadow
+            ctx.fillStyle = "rgba(0,0,0,0.25)";
+            ctx.beginPath();
+            ctx.ellipse(0, 55, 22, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // fighter body
+            ctx.scale(fighter.facing, 1);
+
+            // legs
+            ctx.fillStyle = "#111827";
+            ctx.fillRect(-14, 22, 12, 42);
+            ctx.fillRect(4, 22, 12, 42);
+
+            // torso
+            ctx.fillStyle = bodyColor;
+            ctx.fillRect(-18, -8, 36, 52);
+
+            // gi accents
+            ctx.fillStyle = fighter.gi;
+            ctx.fillRect(-18, 4, 36, 18);
+            ctx.fillStyle = fighter.secondary;
+            ctx.fillRect(-8, -8, 16, 18);
+
+            // arms
+            ctx.fillStyle = bodyColor;
+            ctx.fillRect(-28, 0, 10, 36);
+            ctx.fillRect(18, 0, 10, 36);
+
+            // neck
+            ctx.fillStyle = "#f1c27d";
+            ctx.fillRect(-4, -24, 8, 10);
+
+            // head
+            ctx.fillStyle = "#f1c27d";
+            ctx.beginPath();
+            ctx.arc(0, -40, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            // hair
+            ctx.fillStyle = fighter.hair;
+            ctx.beginPath();
+            ctx.moveTo(-16, -48);
+            ctx.lineTo(-8, -60);
+            ctx.lineTo(-2, -46);
+            ctx.lineTo(10, -58);
+            ctx.lineTo(18, -48);
+            ctx.lineTo(12, -34);
+            ctx.lineTo(-12, -34);
+            ctx.closePath();
+            ctx.fill();
+
+            // eyes
+            ctx.fillStyle = "#111827";
+            ctx.fillRect(-8, -42, 4, 5);
+            ctx.fillRect(4, -42, 4, 5);
+
+            // expression / aura
+            if (fighter.flashTimer > 0) {
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-9, -28);
+                ctx.lineTo(9, -28);
+                ctx.stroke();
             }
+
+            // special attack glow
+            if (fighter.state === "special") {
+                ctx.fillStyle = fighter.aura.replace(")", ", 0.58)").replace("rgb", "rgba");
+                ctx.beginPath();
+                ctx.arc(26, -8, 16 + Math.sin(fighter.auraPulse * 3) * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // bars
+            const barX = isPlayer ? 32 : canvas.width - 212;
+            const barY = 26;
+            const barW = 180;
+
+            drawBar(barX, barY, barW, 16, fighter.hp, fighter.maxHp, "#ef4444");
+            drawBar(barX, barY + 22, barW, 10, fighter.energy, 100, "#60a5fa");
+
+            drawNameplate(fighter, barX, barY - 34, !!isPlayer);
+        }
+
+        function drawArenaIndicators() {
+            if (!player || !enemy || !gameActive) return;
+            const distance = Math.abs(player.x - enemy.x);
+            const alpha = 0.25 + (1 - Math.min(distance / 500, 1)) * 0.45;
+
+            ctx.strokeStyle = `rgba(125,211,252,${alpha})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width * 0.5 - 180, 26);
+            ctx.lineTo(canvas.width * 0.5 + 180, 26);
+            ctx.stroke();
         }
 
         function render() {
             drawBackground();
-            drawProjectiles();
             drawEffects();
+            drawProjectiles();
+            drawParticles();
 
             if (player) drawFighter(player, true);
             if (enemy) drawFighter(enemy, false);
 
-            if (!gameActive && selectedChar) {
-                ctx.fillStyle = "rgba(17,24,39,0.4)";
+            drawArenaIndicators();
+
+            if (!gameActive) {
+                ctx.fillStyle = "rgba(9, 11, 18, 0.18)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
         }
 
-        function loop(timestamp) {
-            const dt = Math.min((timestamp - lastTimestamp) / 1000 || 0.016, 0.033);
-            lastTimestamp = timestamp;
+        function gameLoop(ts) {
+            const dt = Math.min((ts - (animationState.lastTs || ts)) / 1000 || 0.016, 0.032);
+            animationState.lastTs = ts;
 
-            update(dt);
+            updateWorld(dt);
             render();
-
-            requestAnimationFrame(loop);
+            requestAnimationFrame(gameLoop);
         }
 
-        document.addEventListener("keydown", (e) => {
-            const key = e.key.toLowerCase();
-            keys[key] = true;
-            if (["w", "a", "s", "d", "j", "k", "l"].includes(key)) e.preventDefault();
+        document.addEventListener("keydown", (event) => {
+            const key = event.key.toLowerCase();
+            if (["a", "d", "w", "j", "k", "l"].includes(key)) {
+                event.preventDefault();
+            }
+
+            animationState.activeKeys[key] = true;
+
+            if (event.repeat) return;
+
+            if (key === "j" && player && gameActive) triggerPunch(player);
+            if (key === "k" && player && gameActive) triggerKiBlast(player);
+            if (key === "l" && player && gameActive) triggerSpecial(player);
+            if (key === "w" && player && player.onGround && gameActive) {
+                player.vy = -player.jumpForce;
+                player.onGround = false;
+                player.state = "jump";
+            }
         });
 
-        document.addEventListener("keyup", (e) => {
-            keys[e.key.toLowerCase()] = false;
+        document.addEventListener("keyup", (event) => {
+            const key = event.key.toLowerCase();
+            animationState.activeKeys[key] = false;
         });
 
-        buildSelector();
-        messageEl.textContent = "Choose your fighter";
-        scoreboardEl.textContent = "Round 1";
+        buildFighterButtons();
+        refreshRound();
 
-        requestAnimationFrame(loop);
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 
