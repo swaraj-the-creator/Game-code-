@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Riftbreak — Mech vs. Kaiju</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #071116;
+            color: #e8f4f4;
+            font: 14px/1.4 system-ui, sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #hud {
+            position: fixed;
+            inset: 18px 22px auto;
+            pointer-events: none;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .panel {
+            width: min(340px, 42vw);
+            padding: 12px 14px;
+            background: #071116bb;
+            border: 1px solid #9bb9bb55;
+        }
+
+        .label {
+            font-size: 11px;
+            letter-spacing: .16em;
+            color: #a9c5c6;
+        }
+
+        .bar {
+            height: 9px;
+            margin-top: 7px;
+            background: #223236;
+        }
+
+        .fill {
+            height: 100%;
+            width: 100%;
+            transition: width .15s;
+        }
+
+        #pilotBar {
+            background: #44d5c1;
+        }
+
+        #beastBar {
+            background: #e45c48;
+        }
+
+        #message {
+            margin-top: 18px;
+            text-align: center;
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-shadow: 0 2px 8px #000;
+        }
+
+        #help {
+            position: fixed;
+            bottom: 18px;
+            width: 100%;
+            text-align: center;
+            color: #d7e1df;
+            text-shadow: 0 2px 6px #000;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud">
+        <div class="row">
+            <div class="panel">
+                <div class="label">TIDEBREAKER // ARMOR</div>
+                <div class="bar">
+                    <div id="pilotBar" class="fill"></div>
+                </div>
+            </div>
+            <div class="panel" style="text-align:right">
+                <div class="label">RIFT STALKER // VITALITY</div>
+                <div class="bar">
+                    <div id="beastBar" class="fill"></div>
+                </div>
+            </div>
+        </div>
+        <div id="message">DEFEND THE HARBOR</div>
+    </div>
+    <div id="help">WASD move · SPACE fire · SHIFT evade · R restart</div>
+
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x89999a);
+        scene.fog = new THREE.Fog(0x89999a, 30, 95);
+
+        const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 200);
+        camera.position.set(0, 11, 25);
+        camera.lookAt(0, 4, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.HemisphereLight(0xc9e1e2, 0x303638, 2.0));
+        const sun = new THREE.DirectionalLight(0xffe2c2, 3.2);
+        sun.position.set(-12, 22, 12);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(2048, 2048);
+        scene.add(sun);
+
+        const mat = (color, metalness = 0, roughness = .7, emissive = 0x000000) =>
+            new THREE.MeshStandardMaterial({ color, metalness, roughness, emissive });
+
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 70), mat(0x39464a, .15, .95));
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -.12;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const grid = new THREE.GridHelper(100, 50, 0x718181, 0x56676a);
+        grid.position.y = -.1;
+        scene.add(grid);
+
+        // Harbor skyline: simple original geometry, varied to create depth.
+        for (let i = 0; i < 32; i++) {
+            const w = 1.2 + Math.random() * 2.2;
+            const h = 3 + Math.random() * 12;
+            const building = new THREE.Mesh(
+                new THREE.BoxGeometry(w, h, 2 + Math.random() * 2),
+                mat(i % 3 ? 0x536165 : 0x697579, .1, .9)
+            );
+            building.position.set(-28 + i * 1.8, h / 2 - .1, -13 - Math.random() * 8);
+            building.castShadow = true;
+            building.receiveShadow = true;
+            scene.add(building);
+        }
+
+        function box(parent, size, position, material, bevel = false) {
+            const geometry = bevel
+                ? new THREE.BoxGeometry(...size)
+                : new THREE.BoxGeometry(...size);
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(...position);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            parent.add(mesh);
+            return mesh;
+        }
+
+        function makeMech() {
+            const root = new THREE.Group();
+            const steel = mat(0x285765, .72, .34);
+            const dark = mat(0x172b32, .65, .42);
+            const trim = mat(0xd38c42, .55, .4);
+            const glow = mat(0x66f5e1, .25, .24, 0x20bbaa);
+            box(root, [2.0, 2.3, 1.15], [0, 4.0, 0], steel);
+            box(root, [1.35, .55, 1.2], [0, 5.35, 0], dark);
+            box(root, [.72, .42, .75], [0, 5.83, -.02], dark);
+            box(root, [.4, .14, .12], [0, 5.84, -.42], glow);
+            box(root, [1.65, .42, 1.3], [0, 2.65, 0], dark);
+            box(root, [.22, 1.8, .26], [-1.12, 4.25, 0], trim);
+            box(root, [.22, 1.8, .26], [1.12, 4.25, 0], trim);
+            box(root, [.88, .16, .15], [0, 4.65, -.59], glow);
+            for (const side of [-1, 1]) {
+                box(root, [.82, 1.8, .82], [side * 1.38, 4.05, 0], steel);
+                box(root, [.65, .45, .84], [side * 1.38, 3.0, 0], dark);
+                box(root, [.95, 1.85, .92], [side * .62, 1.65, 0], steel);
+                box(root, [1.0, .35, 1.0], [side * .62, .5, .08], dark);
+                box(root, [.08, .68, .94], [side * 1.8, 4.1, 0], trim);
+            }
+            root.position.set(-5, 0, 0);
+            scene.add(root);
+            return root;
+        }
+
+        function makeKaiju() {
+            const root = new THREE.Group();
+            const hide = mat(0x405148, .12, .88);
+            const armor = mat(0x253936, .25, .65);
+            const eye = mat(0xff5b38, .1, .25, 0xff2410);
+            // Long torso, hunched shoulders, head, jaw, and dorsal spines.
+            box(root, [2.5, 2.6, 1.5], [0, 4.1, 0], hide);
+            box(root, [2.0, 1.2, 1.45], [0, 5.35, -.05], armor);
+            box(root, [1.25, .9, 1.0], [0, 6.05, -.25], hide);
+            box(root, [1.35, .38, 1.15], [0, 5.62, -.7], armor);
+            box(root, [.2, .16, .12], [-.35, 6.16, -.78], eye);
+            box(root, [.2, .16, .12], [.35, 6.16, -.78], eye);
+            for (let i = 0; i < 5; i++) {
+                const spine = new THREE.Mesh(new THREE.ConeGeometry(.38, 1.25, 5), armor);
+                spine.position.set(-.8 + i * .4, 6.25, .35);
+                spine.rotation.z = -.3;
+                spine.castShadow = true;
+                root.add(spine);
+            }
+            for (const side of [-1, 1]) {
+                box(root, [.8, 2.0, .85], [side * 1.45, 4.35, 0], hide);
+                box(root, [1.0, 2.0, .95], [side * .72, 1.6, 0], hide);
+                box(root, [1.12, .55, 1.0], [side * .72, .45, -.08], armor);
+            }
+            root.position.set(5, 0, 0);
+            root.rotation.y = Math.PI / 2;
+            scene.add(root);
+            return root;
+        }
+
+        const mech = makeMech();
+        const kaiju = makeKaiju();
+        const projectiles = [];
+        const keys = new Set();
+        let armor = 100, vitality = 100, lastShot = 0, enemyCooldown = 0;
+        let evadeTime = 0, ended = false;
+        const pilotBar = document.querySelector('#pilotBar');
+        const beastBar = document.querySelector('#beastBar');
+        const message = document.querySelector('#message');
+
+        addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            keys.add(key);
+            if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) event.preventDefault();
+            if (key === 'r' && ended) location.reload();
+            if (key === ' ' && !ended) fire();
+            if (key === 'shift' && !ended) evadeTime = .45;
+        });
+        addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
+
+        function fire() {
+            const now = performance.now();
+            if (now - lastShot < 500) return;
+            lastShot = now;
+            const shot = new THREE.Mesh(new THREE.SphereGeometry(.22, 12, 10),
+                mat(0x9ffff2, .2, .2, 0x40ffee));
+            shot.position.set(mech.position.x + 1.7, 4.1, mech.position.z);
+            shot.castShadow = true;
+            scene.add(shot);
+            projectiles.push(shot);
+        }
+
+        function finish(text) {
+            ended = true;
+            message.textContent = text + ' — PRESS R TO RESTART';
+        }
+
+        const clock = new THREE.Clock();
+        function update(dt) {
+            if (ended) return;
+
+            const speed = keys.has('shift') ? 9 : 5;
+            if (keys.has('a')) mech.position.x -= speed * dt;
+            if (keys.has('d')) mech.position.x += speed * dt;
+            if (keys.has('w')) mech.position.z -= speed * dt;
+            if (keys.has('s')) mech.position.z += speed * dt;
+            mech.position.x = THREE.MathUtils.clamp(mech.position.x, -11, 0);
+            mech.position.z = THREE.MathUtils.clamp(mech.position.z, -5, 5);
+            evadeTime = Math.max(0, evadeTime - dt);
+
+            // The kaiju advances, but keeps enough distance for the fight to play out.
+            if (kaiju.position.x > mech.position.x + 3.6) {
+                kaiju.position.x -= .55 * dt;
+            }
+
+            enemyCooldown -= dt;
+            if (kaiju.position.x - mech.position.x < 5.4 && enemyCooldown <= 0) {
+                enemyCooldown = 1.6;
+                if (evadeTime <= 0) {
+                    armor = Math.max(0, armor - 9);
+                    pilotBar.style.width = armor + '%';
+                    if (armor === 0) finish('TIDEBREAKER DISABLED');
+                }
+            }
+
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const shot = projectiles[i];
+                shot.position.x += 17 * dt;
+                if (shot.position.x >= kaiju.position.x - 1.4 &&
+                    Math.abs(shot.position.z - kaiju.position.z) < 1.8) {
+                    vitality = Math.max(0, vitality - 12);
+                    beastBar.style.width = vitality + '%';
+                    scene.remove(shot);
+                    projectiles.splice(i, 1);
+                    if (vitality === 0) finish('RIFT STALKER DEFEATED');
+                } else if (shot.position.x > 18) {
+                    scene.remove(shot);
+                    projectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), .04);
+            update(dt);
+            const t = performance.now() * .001;
+            mech.position.y = Math.sin(t * 2.2) * .045;
+            kaiju.position.y = Math.sin(t * 1.5 + 1) * .07;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+    </script>
+</body>
+
+</html>
